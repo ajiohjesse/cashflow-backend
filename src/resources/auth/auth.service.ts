@@ -1,4 +1,3 @@
-import { DEFAULT_CATEGORIES } from '@/constants/category.constants';
 import { db } from '@/database';
 import {
   inflowCategoryTable,
@@ -6,8 +5,9 @@ import {
   userTable,
 } from '@/database/schemas';
 import { PublicError } from '@/libraries/error.lib';
-import { PasswordService } from '@/libraries/pasword.lib';
-import { eq } from 'drizzle-orm';
+import { PasswordService } from '@/libraries/password.lib';
+import { DEFAULT_CATEGORIES } from '@/resources/category/category.constants';
+import { eq, sql } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import type {
   InsertUserDTO,
@@ -28,7 +28,7 @@ export class AuthService {
       where: id
         ? eq(userTable.id, id)
         : email
-          ? eq(userTable.email, email)
+          ? eq(sql`lower(${userTable.email})`, email.toLowerCase())
           : undefined,
     });
 
@@ -53,7 +53,7 @@ export class AuthService {
       const [createdUser] = await trx
         .insert(userTable)
         .values({
-          email,
+          email: email.toLowerCase(),
           fullName,
           passwordHash,
         })
@@ -84,7 +84,7 @@ export class AuthService {
   login = async (user: LoginUserDTO): Promise<SelectUserDTO> => {
     const { email, password } = user;
     const userData = await db.query.userTable.findFirst({
-      where: (table, { eq }) => eq(table.email, email),
+      where: eq(sql`lower(${userTable.email})`, email.toLowerCase()),
     });
 
     if (!userData || !userData.passwordHash) {

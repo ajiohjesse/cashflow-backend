@@ -22,14 +22,28 @@ export const generateApiResponseSchema = ({
   });
 };
 
-type APIResponseData = z.infer<ReturnType<typeof generateApiResponseSchema>>;
+export const generatePaginatedDataSchema = (
+  itemsKey: string,
+  itemsSchema: z.ZodType
+) => {
+  return z.object({
+    [itemsKey]: z.array(itemsSchema),
+    pagination: z.object({
+      currentPage: z.number(),
+      limit: z.number(),
+      totalCount: z.number(),
+    }),
+  });
+};
+
+type APIResponse = z.infer<ReturnType<typeof generateApiResponseSchema>>;
 
 export class ResponseData {
   static success<TData extends Record<string, unknown>>(
     statusCode: StatusCodes,
     message: string,
     data?: TData
-  ): APIResponseData {
+  ): APIResponse {
     return {
       success: true,
       statusCode: statusCode,
@@ -42,7 +56,7 @@ export class ResponseData {
     statusCode: StatusCodes,
     message: string,
     data?: TData
-  ): APIResponseData {
+  ): APIResponse {
     return {
       success: false,
       statusCode: statusCode,
@@ -67,7 +81,7 @@ export class ResponseData {
         limit: number;
       };
     }
-  ): APIResponseData {
+  ): APIResponse {
     return {
       success: true,
       statusCode: statusCode,

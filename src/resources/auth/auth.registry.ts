@@ -97,3 +97,37 @@ registry.registerPath({
     },
   ]),
 });
+
+registry.registerPath({
+  path: '/v1/profile',
+  method: 'get',
+  operationId: 'getProfile',
+  summary: 'Get Profile',
+  description: 'Get the user profile',
+  tags: ['Auth'],
+  responses: generateOpenAPIResponses([
+    {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Profile retrieved successfully',
+      schema: selectUserSchema,
+    },
+  ]),
+});
+
+registry.registerPath({
+  path: '/v1/logout',
+  method: 'post',
+  operationId: 'logout',
+  summary: 'Logout',
+  description: 'Logout the user',
+  tags: ['Auth'],
+  responses: generateOpenAPIResponses([
+    {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Logout successfull',
+      schema: z.object({}),
+    },
+  ]),
+});

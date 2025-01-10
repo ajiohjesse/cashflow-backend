@@ -99,13 +99,13 @@ export const outflowCategoryTable = pgTable(
 
 export const outflowTable = pgTable('outflows', {
   id: tableId,
-  userId: uuid('user_id')
+  userId: uuid()
     .notNull()
     .references(() => userTable.id, { onDelete: 'cascade' }),
   amount: integer().notNull(),
-  categoryId: uuid('category_id')
+  categoryId: uuid()
     .notNull()
-    .references(() => inflowCategoryTable.id, {
+    .references(() => outflowCategoryTable.id, {
       onDelete: 'cascade',
     }),
   description: text(),

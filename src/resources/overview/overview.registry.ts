@@ -4,7 +4,7 @@ import {
 } from '@/libraries/openapi.lib';
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { StatusCodes } from 'http-status-codes';
-import { overviewSchema } from './overview.validators';
+import { overviewQuerySchema, overviewSchema } from './overview.validators';
 
 const registry = new OpenAPIRegistry();
 export { registry as overviewRegistry };
@@ -18,7 +18,9 @@ registry.registerPath({
   summary: 'Get Expense Overview',
   description: 'Get the overview of inlows and outflows',
   tags: ['Overview'],
-
+  request: {
+    query: overviewQuerySchema,
+  },
   responses: generateOpenAPIResponses([
     {
       success: true,

@@ -1,9 +1,10 @@
 import { APIErrors } from '@/libraries/error.lib';
+import { RequestValidator } from '@/libraries/request.lib';
 import { ResponseData } from '@/libraries/response.lib';
 import type { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import type { OverviewService } from './overview.service';
-import type { OverviewDTO } from './overview.validators';
+import { overviewQuerySchema, type OverviewDTO } from './overview.validators';
 
 export class OverviewController {
   constructor(private service: OverviewService) {
@@ -15,7 +16,11 @@ export class OverviewController {
       throw APIErrors.authenticationError();
     }
     const userId = res.locals.user.userId;
-    const overview = await this.service.getOverview({ userId });
+    const params = RequestValidator.validateQuery(
+      req.query,
+      overviewQuerySchema
+    );
+    const overview = await this.service.getOverview({ userId, params });
 
     res
       .status(StatusCodes.OK)

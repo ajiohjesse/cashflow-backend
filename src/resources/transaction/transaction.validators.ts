@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { selectCategorySchema } from '../category/category.validators';
 
 export const selectTransactionSchema = z.object({
   id: z.string().uuid(),
@@ -14,13 +15,7 @@ export type SelectTransactionDTO = z.infer<typeof selectTransactionSchema>;
 export const selectTransactionWithCategorySchema = z.intersection(
   selectTransactionSchema,
   z.object({
-    category: z.object({
-      id: z.string().uuid(),
-      name: z.string(),
-      createdAt: z.string().date(),
-      updatedAt: z.string().date(),
-      userId: z.string().uuid(),
-    }),
+    category: selectCategorySchema,
   })
 );
 

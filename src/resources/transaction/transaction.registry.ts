@@ -21,7 +21,7 @@ registry.register(
 registry.register('InsertTransactionDTO', insertTransactionSchema);
 
 registry.registerPath({
-  path: '/v1/inflow',
+  path: '/v1/inflows',
   method: 'post',
   operationId: 'createInflow',
   summary: 'Create Inflow',
@@ -48,7 +48,7 @@ registry.registerPath({
 });
 
 registry.registerPath({
-  path: '/v1/outflow',
+  path: '/v1/outflows',
   method: 'post',
   operationId: 'createOutflow',
   summary: 'Create Outflow',

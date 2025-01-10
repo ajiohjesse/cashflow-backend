@@ -1,5 +1,13 @@
 import { db } from '@/database';
-import { inflowTable, outflowTable } from '@/database/schemas';
+import {
+  inflowCategoryTable,
+  inflowTable,
+  outflowCategoryTable,
+  outflowTable,
+} from '@/database/schemas';
+import { PublicError } from '@/libraries/error.lib';
+import { eq } from 'drizzle-orm';
+import { StatusCodes } from 'http-status-codes';
 import type {
   InsertTransactionDTO,
   SelectTransactionDTO,
@@ -17,10 +25,22 @@ export class TransactionService {
     type,
     userId,
   }: ICreateTransaction): Promise<SelectTransactionDTO> => {
-    const targetTable = type === 'inflow' ? inflowTable : outflowTable;
+    const targetTransactionTable =
+      type === 'inflow' ? inflowTable : outflowTable;
+    const targetCategoryTable =
+      type === 'inflow' ? inflowCategoryTable : outflowCategoryTable;
+
+    const [category] = await db
+      .select()
+      .from(targetCategoryTable)
+      .where(eq(targetCategoryTable.id, transaction.categoryId));
+
+    if (!category) {
+      throw new PublicError(StatusCodes.BAD_REQUEST, 'Invalid category id');
+    }
 
     const [createdTransaction] = await db
-      .insert(targetTable)
+      .insert(targetTransactionTable)
       .values({
         userId,
         ...transaction,

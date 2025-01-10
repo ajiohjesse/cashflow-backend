@@ -1,5 +1,6 @@
 import { APP_CONFIG } from '@/config/app.config';
 import { env } from '@/config/env.config';
+import { APIErrors } from '@/libraries/error.lib';
 import { RequestValidator } from '@/libraries/request.lib';
 import { ResponseData } from '@/libraries/response.lib';
 import { TokenService } from '@/libraries/token.lib';
@@ -50,7 +51,7 @@ export class AuthController {
         httpOnly: true,
         sameSite: 'lax',
         secure: env.isProduction,
-        maxAge: APP_CONFIG.REFRESH_TOKEN_TTL_SECONDS,
+        maxAge: APP_CONFIG.REFRESH_TOKEN_TTL_SECONDS * 1000,
       })
       .json(
         ResponseData.success<SelectUserDTO & { accessToken: string }>(
@@ -78,7 +79,7 @@ export class AuthController {
         httpOnly: true,
         sameSite: 'lax',
         secure: env.isProduction,
-        maxAge: APP_CONFIG.REFRESH_TOKEN_TTL_SECONDS,
+        maxAge: APP_CONFIG.REFRESH_TOKEN_TTL_SECONDS * 1000,
       })
       .json(
         ResponseData.success<SelectUserDTO & { accessToken: string }>(
@@ -138,5 +139,35 @@ export class AuthController {
           { ...refreshTokenPayload, accessToken }
         )
       );
+  };
+
+  getProfile: RequestHandler = async (_req, res) => {
+    if (!res.locals.user) {
+      throw APIErrors.authenticationError();
+    }
+
+    const userId = res.locals.user.userId;
+    const user = await this.service.getUser({ id: userId });
+
+    if (!user) {
+      throw APIErrors.notFoundError();
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json(
+        ResponseData.success<SelectUserDTO>(
+          StatusCodes.OK,
+          'Profile retrieved successfully',
+          user
+        )
+      );
+  };
+
+  logout: RequestHandler = async (_req, res) => {
+    res.clearCookie(APP_CONFIG.REFRESH_COOKIE_NAME);
+    res
+      .status(StatusCodes.OK)
+      .json(ResponseData.success(StatusCodes.OK, 'Logout successfull'));
   };
 }
