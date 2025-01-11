@@ -29,6 +29,7 @@ export class OverviewService {
       with: {
         category: true,
       },
+      orderBy: (table, { desc }) => desc(table.createdAt),
     });
 
     const outflows = await db.query.outflowTable.findMany({
@@ -36,6 +37,7 @@ export class OverviewService {
       with: {
         category: true,
       },
+      orderBy: (table, { desc }) => desc(table.createdAt),
     });
 
     const totalInflowAmount = inflows.reduce(
