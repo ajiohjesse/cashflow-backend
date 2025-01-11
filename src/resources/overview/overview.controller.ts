@@ -32,4 +32,22 @@ export class OverviewController {
         )
       );
   };
+
+  getFinancialSummary: RequestHandler = async (_req, res) => {
+    if (!res.locals.user) {
+      throw APIErrors.authenticationError();
+    }
+    const userId = res.locals.user.userId;
+    const summary = await this.service.getLastMonthFinancialSummary(userId);
+
+    res.status(StatusCodes.OK).json(
+      ResponseData.success<{ summary: string }>(
+        StatusCodes.OK,
+        'Financial summary retrieved successfully',
+        {
+          summary,
+        }
+      )
+    );
+  };
 }

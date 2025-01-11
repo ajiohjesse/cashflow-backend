@@ -1,6 +1,11 @@
 import { db } from '@/database';
-import { inflowTable, outflowTable } from '@/database/schemas';
-import { and, eq } from 'drizzle-orm';
+import {
+  financialSummaryTable,
+  inflowTable,
+  outflowTable,
+} from '@/database/schemas';
+import { generateFinancialSummary } from '@/libraries/google-ai';
+import { and, eq, sql } from 'drizzle-orm';
 import { getOverviewFilterQuery } from './overview.helpers';
 import type { OverviewDTO, OverviewParamsDTO } from './overview.validators';
 
@@ -55,5 +60,60 @@ export class OverviewService {
       latestOutflows,
       period,
     };
+  };
+
+  getLastMonthFinancialSummary = async (userId: string): Promise<string> => {
+    const summary = await db.query.financialSummaryTable.findFirst({
+      where: and(
+        eq(financialSummaryTable.userId, userId),
+        sql`DATE_TRUNC('month', ${financialSummaryTable.period}) = DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '1 month'`
+      ),
+    });
+
+    if (summary) {
+      return summary.summary;
+    }
+
+    const monthlyInflows = await db.query.inflowTable.findMany({
+      where: and(
+        eq(inflowTable.userId, userId),
+        sql`
+      DATE(${inflowTable.createdAt}) >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '1 month'
+      AND DATE(${inflowTable.createdAt}) < DATE_TRUNC('month', CURRENT_DATE)
+    `
+      ),
+      with: {
+        category: true,
+      },
+    });
+
+    const monthlyOutflows = await db.query.outflowTable.findMany({
+      where: and(
+        eq(outflowTable.userId, userId),
+        sql`
+      DATE(${outflowTable.createdAt}) >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '1 month'
+      AND DATE(${outflowTable.createdAt}) < DATE_TRUNC('month', CURRENT_DATE)
+    `
+      ),
+      with: {
+        category: true,
+      },
+    });
+
+    const generatedSummary = await generateFinancialSummary({
+      inflows: monthlyInflows,
+      outflows: monthlyOutflows,
+    });
+
+    const [insertedSummary] = await db
+      .insert(financialSummaryTable)
+      .values({
+        userId,
+        summary: generatedSummary,
+        period: sql`DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '1 month'`,
+      })
+      .returning();
+
+    return insertedSummary.summary;
   };
 }

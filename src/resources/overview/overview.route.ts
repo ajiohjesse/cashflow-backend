@@ -10,3 +10,8 @@ const overviewService = new OverviewService();
 const overviewController = new OverviewController(overviewService);
 
 route.get('/v1/overview', authHandler, overviewController.getOverview);
+route.get(
+  '/v1/overview/summary',
+  authHandler,
+  overviewController.getFinancialSummary
+);

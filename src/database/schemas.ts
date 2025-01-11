@@ -6,7 +6,9 @@ import {
   jsonb,
   pgTable,
   text,
+  timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { tableId, timestamps } from './db.utils';
@@ -118,3 +120,23 @@ export const outflowRelations = relations(outflowTable, ({ one }) => ({
     references: [outflowCategoryTable.id],
   }),
 }));
+
+export const financialSummaryTable = pgTable(
+  'financial_summaries',
+  {
+    id: tableId,
+    userId: uuid()
+      .notNull()
+      .references(() => userTable.id, {
+        onDelete: 'cascade',
+      }),
+    summary: text().notNull(),
+    period: timestamp().notNull(),
+    ...timestamps,
+  },
+  table => [
+    {
+      uniqueUserPeriod: uniqueIndex().on(table.userId, table.period),
+    },
+  ]
+);
