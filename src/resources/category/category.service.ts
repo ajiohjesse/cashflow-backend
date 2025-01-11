@@ -1,7 +1,7 @@
 import { db } from '@/database';
 import { inflowCategoryTable, outflowCategoryTable } from '@/database/schemas';
 import { APIErrors, PublicError } from '@/libraries/error.lib';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import type { SelectCategoryDTO } from './category.validators';
 
@@ -33,7 +33,8 @@ export class CategoryService {
     const categories = await db
       .select()
       .from(targetTable)
-      .where(eq(targetTable.userId, userId));
+      .where(eq(targetTable.userId, userId))
+      .orderBy(asc(targetTable.name));
 
     return categories;
   };
