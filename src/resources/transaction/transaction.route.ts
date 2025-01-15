@@ -11,3 +11,8 @@ const transactionController = new TransactionController(transactionService);
 
 route.post('/v1/inflows', authHandler, transactionController.createInflow);
 route.post('/v1/outflows', authHandler, transactionController.createOutflow);
+route.get(
+  '/v1/transactions',
+  authHandler,
+  transactionController.getTransactions
+);

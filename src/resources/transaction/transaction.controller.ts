@@ -6,7 +6,9 @@ import { StatusCodes } from 'http-status-codes';
 import type { TransactionService } from './transaction.service';
 import {
   insertTransactionSchema,
+  transactionsQuerySchema,
   type SelectTransactionDTO,
+  type SelectTransactionWithCategoryDTO,
 } from './transaction.validators';
 
 export class TransactionController {
@@ -68,5 +70,37 @@ export class TransactionController {
           createdOutflow
         )
       );
+  };
+
+  getTransactions: RequestHandler = async (req, res) => {
+    if (!res.locals.user) {
+      throw APIErrors.authenticationError();
+    }
+
+    const query = RequestValidator.validateQuery(
+      req.query,
+      transactionsQuerySchema
+    );
+    const userId = res.locals.user.userId;
+    const { transactions, total } = await this.service.getTransactions({
+      userId,
+      ...query,
+    });
+
+    res.status(StatusCodes.OK).json(
+      ResponseData.successWithPagination<
+        'transactions',
+        SelectTransactionWithCategoryDTO
+      >(StatusCodes.OK, 'Retrieved transactions successfully', {
+        items: {
+          transactions,
+        },
+        pagination: {
+          currentPage: query.page,
+          limit: query.limit,
+          totalCount: total,
+        },
+      })
+    );
   };
 }

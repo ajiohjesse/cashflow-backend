@@ -5,6 +5,7 @@ import {
 } from '@asteasolutions/zod-to-openapi';
 import { apiReference } from '@scalar/express-api-reference';
 import type { Application } from 'express';
+import swaggerUi from 'swagger-ui-express';
 
 export function setupApiDocs(app: Application, registries: OpenAPIRegistry[]) {
   const registry = new OpenAPIRegistry(registries);
@@ -36,6 +37,8 @@ export function setupApiDocs(app: Application, registries: OpenAPIRegistry[]) {
       url: '/docs.json',
     },
   });
+
+  app.use('/swagger', swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
   app.get('/', (_, res) => {
     res.redirect('/reference');

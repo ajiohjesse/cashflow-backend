@@ -24,7 +24,7 @@ export function getOverviewFilterQuery(
       DATE(${inflowTable.createdAt}) >= Date(${startDate}) 
       AND DATE(${inflowTable.createdAt}) <= Date(${effectiveEndDate})
     `,
-      period: `${new Date(startDate).toLocaleDateString('en-NG')} - ${new Date(effectiveEndDate).toLocaleDateString('en-NG')}`,
+      period: calculatePeriod(startDate, effectiveEndDate),
     };
   }
 
@@ -50,4 +50,16 @@ export function getOverviewFilterQuery(
     query: intervalQueryMap[interval],
     period: periodNameMap[interval],
   };
+}
+
+function calculatePeriod(startDate: string, endDate: string) {
+  const dateFormater = new Intl.DateTimeFormat('en-NG', {
+    dateStyle: 'medium',
+  });
+
+  if (startDate === endDate) {
+    return dateFormater.format(new Date(startDate));
+  }
+
+  return `${dateFormater.format(new Date(startDate))} - ${dateFormater.format(new Date(endDate))}`;
 }
