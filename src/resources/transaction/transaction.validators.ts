@@ -57,8 +57,10 @@ export const transactionsQuerySchema = z.object({
   type: z.enum(['inflow', 'outflow']),
   limit: z.coerce.number().int().positive().min(1).max(100).default(20),
   page: z.coerce.number().int().positive().default(1),
-  dateSort: z.enum(['asc', 'desc']).optional().openapi({ example: 'desc' }),
-  amountSort: z.enum(['asc', 'desc']).optional().openapi({ example: 'asc' }),
+  sort: z
+    .enum(['amount:asc', 'amount:desc', 'date:asc', 'date:desc'])
+    .optional()
+    .openapi({ example: 'amount:asc' }),
 });
 
 export type TransactionsQueryDTO = z.infer<typeof transactionsQuerySchema>;

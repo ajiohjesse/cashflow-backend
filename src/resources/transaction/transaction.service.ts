@@ -5,7 +5,17 @@ import {
   outflowTable,
 } from '@/database/schemas';
 import { PublicError } from '@/libraries/error.lib';
-import { and, count, desc, eq, ilike, inArray, sql, SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  sql,
+  SQL,
+} from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 import { outflowCategoryTable } from './../../database/schemas';
 import {
@@ -61,8 +71,7 @@ export class TransactionService {
     endDate,
     limit,
     page,
-    dateSort,
-    amountSort,
+    sort,
   }: TransactionsQueryDTO & { userId: string }) => {
     const targetTransactionTable =
       type === 'inflow' ? inflowTable : outflowTable;
@@ -85,19 +94,35 @@ export class TransactionService {
     }
 
     if (startDate) {
+      const createdAtTruncated = sql`DATE_TRUNC('day', ${targetTransactionTable.createdAt})`;
+      const startDateTruncated = sql`DATE_TRUNC('day', DATE(${startDate}))`;
+
       if (endDate) {
+        const endDateTruncated = sql`DATE_TRUNC('day', DATE(${endDate}))`;
         if (startDate === endDate) {
-          filters.push(
-            sql`DATE_TRUNC('day', ${targetTransactionTable.createdAt}) = DATE_TRUNC('day', DATE(${startDate}))`
-          );
+          filters.push(sql`${createdAtTruncated} = ${startDateTruncated}`);
         } else {
-          filters.push(sql`DATE_TRUNC('day', ${targetTransactionTable.createdAt}) >= DATE_TRUNC('day', DATE(${startDate}))
-          AND DATE_TRUNC('day', ${targetTransactionTable.createdAt}) <= DATE_TRUNC('day', DATE(${endDate}))`);
+          filters.push(
+            sql`${createdAtTruncated} >= ${startDateTruncated} AND ${createdAtTruncated} <= ${endDateTruncated}`
+          );
         }
       } else {
-        filters.push(
-          sql`DATE_TRUNC('day', ${targetTransactionTable.createdAt}) = DATE_TRUNC('day', DATE(${startDate}))`
-        );
+        filters.push(sql`${createdAtTruncated} = ${startDateTruncated}`);
+      }
+    }
+
+    let sortFilter = desc(targetTransactionTable.createdAt);
+
+    if (sort) {
+      const [sortType, sortDirection] = sort.split(`:`);
+      if (sortType === 'amount' && sortDirection === 'asc') {
+        sortFilter = asc(targetTransactionTable.amount);
+      } else if (sortType === 'amount' && sortDirection === 'desc') {
+        sortFilter = desc(targetTransactionTable.amount);
+      } else if (sortType === 'date' && sortDirection === 'asc') {
+        sortFilter = asc(targetTransactionTable.createdAt);
+      } else if (sortType === 'date' && sortDirection === 'desc') {
+        sortFilter = desc(targetTransactionTable.createdAt);
       }
     }
 
@@ -109,7 +134,7 @@ export class TransactionService {
         eq(targetCategoryTable.id, targetTransactionTable.categoryId)
       )
       .where(and(...filters))
-      .orderBy(desc(targetTransactionTable.createdAt))
+      .orderBy(sortFilter)
       .limit(limit)
       .offset((page - 1) * limit)) as any[];
 
