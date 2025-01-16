@@ -16,3 +16,13 @@ route.get(
   authHandler,
   transactionController.getTransactions
 );
+route.delete(
+  '/v1/inflows/:id',
+  authHandler,
+  transactionController.deleteInflow
+);
+route.delete(
+  '/v1/outflows/:id',
+  authHandler,
+  transactionController.deleteOutflow
+);

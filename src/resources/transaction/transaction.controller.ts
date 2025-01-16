@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 import type { TransactionService } from './transaction.service';
 import {
   insertTransactionSchema,
+  transactionParamsSchema,
   transactionsQuerySchema,
   type SelectTransactionDTO,
   type SelectTransactionWithCategoryDTO,
@@ -102,5 +103,59 @@ export class TransactionController {
         },
       })
     );
+  };
+
+  deleteInflow: RequestHandler = async (req, res) => {
+    if (!res.locals.user) {
+      throw APIErrors.authenticationError();
+    }
+
+    const { id: transactionId } = RequestValidator.validateParams(
+      req.params,
+      transactionParamsSchema
+    );
+    const userId = res.locals.user.userId;
+
+    await this.service.deleteTransaction({
+      type: 'inflow',
+      userId,
+      transactionId,
+    });
+
+    res
+      .status(StatusCodes.NO_CONTENT)
+      .json(
+        ResponseData.success(
+          StatusCodes.NO_CONTENT,
+          'Transaction deleted successfully'
+        )
+      );
+  };
+
+  deleteOutflow: RequestHandler = async (req, res) => {
+    if (!res.locals.user) {
+      throw APIErrors.authenticationError();
+    }
+
+    const { id: transactionId } = RequestValidator.validateParams(
+      req.params,
+      transactionParamsSchema
+    );
+    const userId = res.locals.user.userId;
+
+    await this.service.deleteTransaction({
+      type: 'outflow',
+      userId,
+      transactionId,
+    });
+
+    res
+      .status(StatusCodes.NO_CONTENT)
+      .json(
+        ResponseData.success(
+          StatusCodes.NO_CONTENT,
+          'Transaction deleted successfully'
+        )
+      );
   };
 }

@@ -5,10 +5,12 @@ import {
 import { generatePaginatedDataSchema } from '@/libraries/response.lib';
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { StatusCodes } from 'http-status-codes';
+import { z } from 'zod';
 import {
   insertTransactionSchema,
   selectTransactionSchema,
   selectTransactionWithCategorySchema,
+  transactionParamsSchema,
   transactionsQuerySchema,
 } from './transaction.validators';
 
@@ -95,6 +97,48 @@ registry.registerPath({
         'transactions',
         selectTransactionWithCategorySchema
       ),
+    },
+    openApiUnauthenticatedResponse,
+  ]),
+});
+
+registry.registerPath({
+  path: '/v1/inflows/{id}',
+  method: 'delete',
+  operationId: 'deleteInflow',
+  summary: 'Delete inflow',
+  description: 'Delete an inflow transaction',
+  tags: ['Transaction'],
+  request: {
+    params: transactionParamsSchema,
+  },
+  responses: generateOpenAPIResponses([
+    {
+      success: true,
+      statusCode: StatusCodes.NO_CONTENT,
+      message: 'Transaction deleted successfully',
+      schema: z.object({}),
+    },
+    openApiUnauthenticatedResponse,
+  ]),
+});
+
+registry.registerPath({
+  path: '/v1/outflows/{id}',
+  method: 'delete',
+  operationId: 'deleteOutflow',
+  summary: 'Delete outflow',
+  description: 'Delete an outflow transaction',
+  tags: ['Transaction'],
+  request: {
+    params: transactionParamsSchema,
+  },
+  responses: generateOpenAPIResponses([
+    {
+      success: true,
+      statusCode: StatusCodes.NO_CONTENT,
+      message: 'Transaction deleted successfully',
+      schema: z.object({}),
     },
     openApiUnauthenticatedResponse,
   ]),

@@ -64,3 +64,7 @@ export const transactionsQuerySchema = z.object({
 });
 
 export type TransactionsQueryDTO = z.infer<typeof transactionsQuerySchema>;
+
+export const transactionParamsSchema = z.object({
+  id: z.string().uuid(),
+});

@@ -5,6 +5,7 @@ import {
   outflowTable,
 } from '@/database/schemas';
 import { PublicError } from '@/libraries/error.lib';
+import { isOlderThanOneDay } from '@/libraries/utils';
 import {
   and,
   asc,
@@ -165,5 +166,43 @@ export class TransactionService {
       transactions,
       total,
     };
+  };
+
+  deleteTransaction = async ({
+    type,
+    userId,
+    transactionId,
+  }: {
+    type: 'inflow' | 'outflow';
+    userId: string;
+    transactionId: string;
+  }): Promise<void> => {
+    const targetTable = type === 'inflow' ? inflowTable : outflowTable;
+
+    const [transaction] = await db
+      .select({ id: targetTable.id, createdAt: targetTable.createdAt })
+      .from(targetTable)
+      .where(
+        and(eq(targetTable.userId, userId), eq(targetTable.id, transactionId))
+      );
+
+    if (!transaction) {
+      throw new PublicError(StatusCodes.NOT_FOUND, 'Transaction not found');
+    }
+
+    if (isOlderThanOneDay(new Date(transaction.createdAt))) {
+      throw new PublicError(
+        StatusCodes.FORBIDDEN,
+        'You can only delete transactions that are less than 24 hours old'
+      );
+    }
+
+    await db
+      .delete(targetTable)
+      .where(
+        and(eq(targetTable.userId, userId), eq(targetTable.id, transactionId))
+      );
+
+    return;
   };
 }
