@@ -1,9 +1,17 @@
 import { db } from '@/database';
-import { inflowCategoryTable, outflowCategoryTable } from '@/database/schemas';
+import {
+  inflowCategoryTable,
+  inflowTable,
+  outflowCategoryTable,
+  outflowTable,
+} from '@/database/schemas';
 import { APIErrors, PublicError } from '@/libraries/error.lib';
-import { and, asc, eq, sql } from 'drizzle-orm';
+import { and, asc, count, eq, sql } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
-import type { SelectCategoryDTO } from './category.validators';
+import type {
+  CategoryWithStatDTO,
+  SelectCategoryDTO,
+} from './category.validators';
 
 interface IGetCategories {
   userId: string;
@@ -39,6 +47,43 @@ export class CategoryService {
     return categories;
   };
 
+  getCategoriesWithStat = async ({
+    userId,
+    type,
+  }: IGetCategories): Promise<CategoryWithStatDTO[]> => {
+    if (type === 'inflow') {
+      return db
+        .select({
+          id: inflowCategoryTable.id,
+          name: inflowCategoryTable.name,
+          totalTransactions: count(inflowTable.id),
+        })
+        .from(inflowCategoryTable)
+        .where(eq(inflowCategoryTable.userId, userId))
+        .leftJoin(
+          inflowTable,
+          eq(inflowTable.categoryId, inflowCategoryTable.id)
+        )
+        .groupBy(inflowCategoryTable.name, inflowCategoryTable.id)
+        .orderBy(asc(inflowCategoryTable.name));
+    }
+
+    return db
+      .select({
+        id: outflowCategoryTable.id,
+        name: outflowCategoryTable.name,
+        totalTransactions: count(outflowTable.id),
+      })
+      .from(outflowCategoryTable)
+      .where(eq(outflowCategoryTable.userId, userId))
+      .leftJoin(
+        outflowTable,
+        eq(outflowTable.categoryId, outflowCategoryTable.id)
+      )
+      .groupBy(outflowCategoryTable.name, outflowCategoryTable.id)
+      .orderBy(asc(outflowCategoryTable.name));
+  };
+
   createCategory = async ({
     categoryName,
     type,
@@ -47,18 +92,15 @@ export class CategoryService {
     const targetTable =
       type === 'inflow' ? inflowCategoryTable : outflowCategoryTable;
 
+    const filters = [
+      eq(sql`lower(${targetTable.name})`, categoryName.toLowerCase().trim()),
+      eq(targetTable.userId, userId),
+    ];
+
     const [existingCategory] = await db
       .select()
       .from(targetTable)
-      .where(
-        and(
-          eq(
-            sql`lower(trim(${targetTable.name}))`,
-            categoryName.toLowerCase().trim()
-          ),
-          eq(targetTable.userId, userId)
-        )
-      );
+      .where(and(...filters));
 
     if (existingCategory) {
       throw new PublicError(
@@ -81,25 +123,50 @@ export class CategoryService {
     return createdCategory;
   };
 
-  deleteCategory = async ({
-    categoryId,
-    type,
-    userId,
-  }: IDeleteCategory): Promise<SelectCategoryDTO> => {
-    const targetTable =
+  deleteCategory = async ({ categoryId, type, userId }: IDeleteCategory) => {
+    const targetCategoryTable =
       type === 'inflow' ? inflowCategoryTable : outflowCategoryTable;
+    const targetTransactionTable =
+      type === 'inflow' ? inflowTable : outflowTable;
 
-    const [deletedCategory] = await db
-      .delete(targetTable)
+    const [category] = await db
+      .select({
+        id: targetCategoryTable.id,
+        totalTransactions: count(targetTransactionTable.id),
+      })
+      .from(targetCategoryTable)
       .where(
-        and(eq(targetTable.id, categoryId), eq(targetTable.userId, userId))
+        and(
+          eq(targetCategoryTable.userId, userId),
+          eq(targetCategoryTable.id, categoryId)
+        )
       )
-      .returning();
+      .leftJoin(
+        targetTransactionTable,
+        eq(targetTransactionTable.categoryId, targetCategoryTable.id)
+      )
+      .groupBy(targetCategoryTable.id);
 
-    if (!deletedCategory) {
+    if (!category) {
       throw APIErrors.notFoundError();
     }
 
-    return deletedCategory;
+    if (category.totalTransactions > 0) {
+      throw new PublicError(
+        StatusCodes.FORBIDDEN,
+        'Cannot delete a category that has attached transactions.'
+      );
+    }
+
+    await db
+      .delete(targetCategoryTable)
+      .where(
+        and(
+          eq(targetCategoryTable.id, categoryId),
+          eq(targetCategoryTable.userId, userId)
+        )
+      );
+
+    return;
   };
 }

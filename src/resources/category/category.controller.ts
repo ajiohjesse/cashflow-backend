@@ -7,6 +7,7 @@ import type { CategoryService } from './category.service';
 import {
   categoryParamsSchema,
   insertCategorySchema,
+  type CategoryWithStatDTO,
   type SelectCategoryDTO,
 } from './category.validators';
 
@@ -67,6 +68,62 @@ export class CategoryController {
           totalCount: categories.length,
         },
       })
+    );
+  };
+
+  getInflowCategoriesWithStat: RequestHandler = async (_req, res) => {
+    if (!res.locals.user) {
+      throw APIErrors.authenticationError();
+    }
+    const userId = res.locals.user.userId;
+    const categories = await this.service.getCategoriesWithStat({
+      type: 'inflow',
+      userId,
+    });
+
+    res.status(StatusCodes.OK).json(
+      ResponseData.successWithPagination<'categories', CategoryWithStatDTO>(
+        StatusCodes.OK,
+        'Inflow categories retrieved successfully',
+        {
+          items: {
+            categories,
+          },
+          pagination: {
+            currentPage: 1,
+            limit: categories.length,
+            totalCount: categories.length,
+          },
+        }
+      )
+    );
+  };
+
+  getOutflowCategoriesWithStat: RequestHandler = async (_req, res) => {
+    if (!res.locals.user) {
+      throw APIErrors.authenticationError();
+    }
+    const userId = res.locals.user.userId;
+    const categories = await this.service.getCategoriesWithStat({
+      type: 'outflow',
+      userId,
+    });
+
+    res.status(StatusCodes.OK).json(
+      ResponseData.successWithPagination<'categories', CategoryWithStatDTO>(
+        StatusCodes.OK,
+        'Outflow categories retrieved successfully',
+        {
+          items: {
+            categories,
+          },
+          pagination: {
+            currentPage: 1,
+            limit: categories.length,
+            totalCount: categories.length,
+          },
+        }
+      )
     );
   };
 

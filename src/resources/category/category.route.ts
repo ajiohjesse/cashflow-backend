@@ -21,6 +21,18 @@ route.get(
   categoryController.getOutflowCategories
 );
 
+route.get(
+  '/v1/categories/inflow/stats',
+  authHandler,
+  categoryController.getInflowCategoriesWithStat
+);
+
+route.get(
+  '/v1/categories/outflow/stats',
+  authHandler,
+  categoryController.getOutflowCategoriesWithStat
+);
+
 route.post(
   '/v1/categories/inflow',
   authHandler,

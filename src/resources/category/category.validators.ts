@@ -19,3 +19,11 @@ export const insertCategorySchema = z.object({
 });
 
 export type InsertCategoryDTO = z.infer<typeof insertCategorySchema>;
+
+export const categoryWithStatSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  totalTransactions: z.number(),
+});
+
+export type CategoryWithStatDTO = z.infer<typeof categoryWithStatSchema>;

@@ -8,6 +8,7 @@ import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
 import {
   categoryParamsSchema,
+  categoryWithStatSchema,
   insertCategorySchema,
   selectCategorySchema,
 } from './category.validators';
@@ -17,6 +18,7 @@ export { registry as categoryRegistry };
 
 registry.register('SelectCategoryDTO', selectCategorySchema);
 registry.register('InsertCategoryDTO', insertCategorySchema);
+registry.register('CategoryWithStatDTO', categoryWithStatSchema);
 
 registry.registerPath({
   path: '/v1/categories/inflow',
@@ -55,6 +57,42 @@ registry.registerPath({
         'outflowCategories',
         selectCategorySchema
       ),
+    },
+    openApiUnauthenticatedResponse,
+  ]),
+});
+
+registry.registerPath({
+  path: '/v1/categories/inflow/stats',
+  method: 'get',
+  operationId: 'getInflowCategoriesWithStats',
+  summary: 'Get Inflow Categories with stats',
+  description: 'Get the inflow categories with total transaction count',
+  tags: ['Category'],
+  responses: generateOpenAPIResponses([
+    {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Inflow categories retrieved successfully',
+      schema: generatePaginatedDataSchema('categories', categoryWithStatSchema),
+    },
+    openApiUnauthenticatedResponse,
+  ]),
+});
+
+registry.registerPath({
+  path: '/v1/categories/outflow/stats',
+  method: 'get',
+  operationId: 'getOutflowCategoriesWithStats',
+  summary: 'Get outflow Categories with stats',
+  description: 'Get the outflow categories with total transaction count',
+  tags: ['Category'],
+  responses: generateOpenAPIResponses([
+    {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Outflow categories retrieved successfully',
+      schema: generatePaginatedDataSchema('categories', categoryWithStatSchema),
     },
     openApiUnauthenticatedResponse,
   ]),
