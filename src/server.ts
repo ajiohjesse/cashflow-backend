@@ -8,13 +8,18 @@ const server = app.listen(port, () => {
   logger.info('Server started on port', port);
 });
 
-const onCloseSignal = () => {
-  logger.info('sigint received, shutting down');
+const closeServer = () => {
   server.close(() => {
     logger.info('server closed');
     process.exit(0);
   });
 };
 
-process.on('SIGINT', onCloseSignal);
-process.on('SIGTERM', onCloseSignal);
+process.on('SIGINT', () => {
+  logger.info('SIGTERM received, shutting down');
+  closeServer();
+});
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received, shutting down');
+  closeServer();
+});

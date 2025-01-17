@@ -113,4 +113,66 @@ export class AuthService {
       isEmailVerified: userData.isEmailVerified,
     };
   };
+
+  loginGoogleUser = async ({
+    email,
+    googleId,
+    fullName,
+  }: {
+    email: string;
+    googleId: string;
+    fullName: string;
+  }): Promise<SelectUserDTO> => {
+    const existingAccount = await db.query.userTable.findFirst({
+      where: (table, { eq }) => eq(table.email, email),
+    });
+
+    if (!existingAccount) {
+      return db.transaction(async trx => {
+        const [createdUser] = await trx
+          .insert(userTable)
+          .values({
+            email: email.toLowerCase(),
+            fullName,
+            googleId,
+            isEmailVerified: true,
+          })
+          .returning();
+
+        await trx.insert(inflowCategoryTable).values(
+          DEFAULT_CATEGORIES.inflow.map(category => ({
+            name: category,
+            userId: createdUser.id,
+          }))
+        );
+        await trx.insert(outflowCategoryTable).values(
+          DEFAULT_CATEGORIES.outflow.map(category => ({
+            name: category,
+            userId: createdUser.id,
+          }))
+        );
+
+        return {
+          id: createdUser.id,
+          fullName: createdUser.fullName,
+          email: createdUser.email,
+          isEmailVerified: createdUser.isEmailVerified,
+        };
+      });
+    }
+
+    if (!existingAccount.googleId) {
+      await db
+        .update(userTable)
+        .set({ isEmailVerified: true, googleId: googleId })
+        .where(eq(userTable.id, existingAccount.id));
+    }
+
+    return {
+      email: existingAccount.email,
+      fullName: existingAccount.fullName,
+      id: existingAccount.id,
+      isEmailVerified: existingAccount.isEmailVerified,
+    };
+  };
 }

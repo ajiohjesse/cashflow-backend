@@ -40,3 +40,8 @@ export const refreshUserSchema = z.object({
 });
 
 export type RefreshUserDTO = z.infer<typeof refreshUserSchema>;
+
+export const OauthQuerySchema = z.object({
+  code: z.string(),
+  state: z.string(),
+});

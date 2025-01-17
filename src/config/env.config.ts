@@ -22,6 +22,7 @@ export const env = cleanEnv(process.env, {
   }),
   ACCESS_TOKEN_SECRET: str(),
   REFRESH_TOKEN_SECRET: str(),
-  OPENAI_API_KEY: str(),
   GOOGLE_AI_API_KEY: str(),
+  GOOGLE_CLIENT_ID: str(),
+  GOOGLE_CLIENT_SECRET: str(),
 });
