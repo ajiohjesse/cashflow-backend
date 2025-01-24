@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "db:push:prod": "set NODE_ENV=production&&npm run db:push"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.0",
@@ -56,7 +57,7 @@
   },
   "tsup": {
     "entry": [
-      "src",
+      "src//**/*.{ts,js}",
       "!src/**/__tests__/**",
       "!src/**/*.test.*"
     ],
