@@ -9,6 +9,7 @@ import { setupApiDocs } from './libraries/docs.lib';
 import { errorHandler } from './middleware/error.middleware';
 import { logHandler } from './middleware/logger.middleware';
 import { notFoundHandler } from './middleware/notfound.middleware';
+import { globalLimiter } from './middleware/ratelimit.middleware';
 import { authRegisty } from './resources/auth/auth.registry';
 import { authRoute } from './resources/auth/auth.route';
 import { categoryRegistry } from './resources/category/category.registry';
@@ -31,6 +32,7 @@ app.use(
 );
 app.use(cookieParser());
 app.use(express.json());
+app.use(globalLimiter);
 app.use(logHandler);
 
 const routes: express.RequestHandler[] = [

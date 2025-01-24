@@ -1,4 +1,5 @@
 import { authHandler } from '@/middleware/auth.middleware';
+import { forgotPasswordLimiter } from '@/middleware/ratelimit.middleware';
 import { Router } from 'express';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -16,5 +17,9 @@ route.get('/v1/google/callback', authController.googleCallback);
 route.get('/v1/refresh', authController.refresh);
 route.post('/v1/logout', authController.logout);
 route.get('/v1/profile', authHandler, authController.getProfile);
-route.post('/v1/forgot-password', authController.forgotPassword);
+route.post(
+  '/v1/forgot-password',
+  forgotPasswordLimiter,
+  authController.forgotPassword
+);
 route.post('/v1/reset-password', authController.resetPassword);
