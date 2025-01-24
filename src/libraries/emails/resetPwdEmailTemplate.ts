@@ -165,7 +165,7 @@ text-decoration: none
 <!--[if !mso]>-->
 <td class="t5" style="width:514px;">
 <!--<![endif]-->
-<p class="t4" style="margin:0;Margin:0;font-family:Open Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:25px;font-weight:400;font-style:normal;font-size:15px;text-decoration:none;text-transform:none;letter-spacing:-0.1px;direction:ltr;color:#141414;text-align:left;mso-line-height-rule:exactly;mso-text-raise:3px;">Hi, ${name}. We noticed that you initiated a password reset from your CashFlow account. Click the link below to reset your password. If this was not you, please ignore this message.</p></td>
+<p class="t4" style="margin:0;Margin:0;font-family:Open Sans,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:25px;font-weight:400;font-style:normal;font-size:15px;text-decoration:none;text-transform:none;letter-spacing:-0.1px;direction:ltr;color:#141414;text-align:left;mso-line-height-rule:exactly;mso-text-raise:3px;">Hi, ${name}. We noticed that you initiated a password reset from your CashFlow account. Click the link below to reset your password. If this was not you, please ignore this message. Note that this link will expire after 24 hours.</p></td>
 </tr></table>
 </td></tr><tr><td><div class="t8" style="mso-line-height-rule:exactly;mso-line-height-alt:24px;line-height:24px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr><tr><td align="left">
 <table class="t10" role="presentation" cellpadding="0" cellspacing="0" style="Margin-right:auto;">

@@ -39,4 +39,15 @@ export const globalLimiter = rateLimit({
   limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (req, res) => {
+    logger.warn(`Rate limit exceeded for ip: ${req.ip}`);
+    res
+      .status(StatusCodes.TOO_MANY_REQUESTS)
+      .json(
+        ResponseData.error(
+          StatusCodes.TOO_MANY_REQUESTS,
+          'Too attempts. Please try again later.'
+        )
+      );
+  },
 });
