@@ -45,4 +45,20 @@ export class TokenService {
       return null;
     }
   }
+
+  static generatePasswordResetToken(payload: { email: string }): string {
+    return jwt.sign(payload, env.ACCESS_TOKEN_SECRET, {
+      expiresIn: APP_CONFIG.PASSWORD_RESET_TOKEN_TTL_SECONDS,
+    });
+  }
+
+  static verifyPasswordResetToken(token: string): { email: string } | null {
+    try {
+      return jwt.verify(token, env.ACCESS_TOKEN_SECRET) as {
+        email: string;
+      };
+    } catch (error) {
+      return null;
+    }
+  }
 }

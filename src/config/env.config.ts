@@ -25,4 +25,6 @@ export const env = cleanEnv(process.env, {
   GOOGLE_AI_API_KEY: str(),
   GOOGLE_CLIENT_ID: str(),
   GOOGLE_CLIENT_SECRET: str(),
+  RESEND_API_KEY: str(),
+  EMAIL_DOMAIN: str(),
 });

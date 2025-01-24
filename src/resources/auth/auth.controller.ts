@@ -11,9 +11,11 @@ import type { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import type { AuthService } from './auth.service';
 import {
+  forgotPasswordSchema,
   insertUserSchema,
   loginUserSchema,
   OauthQuerySchema,
+  resetPasswordSchema,
   type RefreshUserDTO,
   type SelectUserDTO,
 } from './auth.validators';
@@ -286,5 +288,34 @@ export class AuthController {
     res
       .status(StatusCodes.OK)
       .json(ResponseData.success(StatusCodes.OK, 'Logout successfull'));
+  };
+
+  forgotPassword: RequestHandler = async (req, res) => {
+    const { email } = RequestValidator.validateBody(
+      req.body,
+      forgotPasswordSchema
+    );
+    await this.service.forgotPassword({ email });
+    res
+      .status(StatusCodes.OK)
+      .json(
+        ResponseData.success(
+          StatusCodes.OK,
+          'Password reset link sent to your email'
+        )
+      );
+  };
+
+  resetPassword: RequestHandler = async (req, res) => {
+    const { password, token } = RequestValidator.validateBody(
+      req.body,
+      resetPasswordSchema
+    );
+    await this.service.resetPassword({ password, token });
+    res
+      .status(StatusCodes.OK)
+      .json(
+        ResponseData.success(StatusCodes.OK, 'Password reset successfully')
+      );
   };
 }

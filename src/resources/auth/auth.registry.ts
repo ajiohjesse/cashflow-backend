@@ -3,9 +3,11 @@ import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
 import {
+  forgotPasswordSchema,
   insertUserSchema,
   loginUserSchema,
   refreshUserSchema,
+  resetPasswordSchema,
   selectUserSchema,
 } from './auth.validators';
 
@@ -127,6 +129,58 @@ registry.registerPath({
       success: true,
       statusCode: StatusCodes.OK,
       message: 'Logout successfull',
+      schema: z.object({}),
+    },
+  ]),
+});
+
+registry.registerPath({
+  path: '/v1/forgot-password',
+  method: 'post',
+  operationId: 'forgotPassword',
+  summary: 'Forgot Password',
+  description: 'Request to reset password',
+  tags: ['Auth'],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: forgotPasswordSchema,
+        },
+      },
+    },
+  },
+  responses: generateOpenAPIResponses([
+    {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Reset password link sent to your email',
+      schema: z.object({}),
+    },
+  ]),
+});
+
+registry.registerPath({
+  path: '/v1/reset-password',
+  method: 'post',
+  operationId: 'resetPassword',
+  summary: 'Reset Password',
+  description: 'Set a new password',
+  tags: ['Auth'],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: resetPasswordSchema,
+        },
+      },
+    },
+  },
+  responses: generateOpenAPIResponses([
+    {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Password reset successfully',
       schema: z.object({}),
     },
   ]),

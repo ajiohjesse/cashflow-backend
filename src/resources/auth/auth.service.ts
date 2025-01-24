@@ -1,17 +1,23 @@
+import { env } from '@/config/env.config';
 import { db } from '@/database';
 import {
   inflowCategoryTable,
   outflowCategoryTable,
   userTable,
 } from '@/database/schemas';
+import { resetPwdEmailTemplate } from '@/libraries/emails/resetPwdEmailTemplate';
 import { PublicError } from '@/libraries/error.lib';
 import { PasswordService } from '@/libraries/password.lib';
+import { TokenService } from '@/libraries/token.lib';
 import { DEFAULT_CATEGORIES } from '@/resources/category/category.constants';
 import { eq, sql } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
+import { sendEmail } from '../../libraries/resend.lib';
 import type {
+  ForgotPasswordDTO,
   InsertUserDTO,
   LoginUserDTO,
+  ResetPasswordDTO,
   SelectUserDTO,
 } from './auth.validators';
 
@@ -174,5 +180,40 @@ export class AuthService {
       id: existingAccount.id,
       isEmailVerified: existingAccount.isEmailVerified,
     };
+  };
+
+  forgotPassword = async ({ email }: ForgotPasswordDTO) => {
+    const user = await this.getUser({ email });
+    if (!user) throw new PublicError(StatusCodes.NOT_FOUND, 'User not found');
+    const resetToken = TokenService.generatePasswordResetToken({
+      email,
+    });
+
+    const resetLink = `${env.CORS_ORIGIN}/reset-password?token=${resetToken}`;
+
+    await sendEmail({
+      to: user.email,
+      subject: 'CashFlow - Password Reset',
+      html: resetPwdEmailTemplate({ name: user.fullName, resetLink }),
+    });
+
+    return;
+  };
+
+  resetPassword = async ({ password, token }: ResetPasswordDTO) => {
+    const verified = TokenService.verifyPasswordResetToken(token);
+    if (!verified)
+      throw new PublicError(StatusCodes.BAD_REQUEST, 'Invalid request');
+    const { email } = verified;
+    const user = await this.getUser({ email });
+    if (!user) throw new PublicError(StatusCodes.NOT_FOUND, 'User not found');
+
+    const passwordHash = PasswordService.hashUserPassword(password);
+
+    await db
+      .update(userTable)
+      .set({ passwordHash, isEmailVerified: true })
+      .where(eq(userTable.email, email));
+    return;
   };
 }

@@ -45,3 +45,22 @@ export const OauthQuerySchema = z.object({
   code: z.string(),
   state: z.string(),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export type ForgotPasswordDTO = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z.object({
+  password: insertUserSchema.shape.password,
+  token: z.string(),
+});
+
+export type ResetPasswordDTO = z.infer<typeof resetPasswordSchema>;
+
+export const verifyTokenSchema = z.object({
+  token: z.string(),
+});
+
+export type VerifyTokenDTO = z.infer<typeof verifyTokenSchema>;
