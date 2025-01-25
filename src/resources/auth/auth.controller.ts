@@ -249,7 +249,7 @@ export class AuthController {
         httpOnly: true,
         sameSite: 'lax',
         secure: env.isProduction,
-        maxAge: APP_CONFIG.REFRESH_TOKEN_TTL_SECONDS,
+        maxAge: APP_CONFIG.REFRESH_TOKEN_TTL_SECONDS * 1000,
       })
       .json(
         ResponseData.success<RefreshUserDTO>(
