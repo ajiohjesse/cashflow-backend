@@ -1,5 +1,6 @@
 [build]
   functions = "dist/netlify/functions"
+   node_bundler = "nft"
 
 [[redirects]]
   from = "/*"
